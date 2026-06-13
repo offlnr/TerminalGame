@@ -266,16 +266,20 @@ def _visible_len(s: str) -> int:
 def hp_bar(current: int, maximum: int, length: int = 20) -> str:
     if maximum <= 0:
         return '█' * length
-    pct    = current / maximum
-    filled = max(0, min(length, int(pct * length)))
-    color  = C.GREEN if pct > 0.5 else (C.YELLOW if pct > 0.25 else C.RED)
-    return color + '█' * filled + C.LGRAY + '░' * (length - filled) + C.RESET
+    filled = max(0, min(length, int((current / maximum) * length)))
+    return C.LRED + '█' * filled + C.LGRAY + '░' * (length - filled) + C.RESET
+
+def mp_bar(current: int, maximum: int, length: int = 20) -> str:
+    if maximum <= 0:
+        return '█' * length
+    filled = max(0, min(length, int((current / maximum) * length)))
+    return C.LCYAN + '█' * filled + C.LGRAY + '░' * (length - filled) + C.RESET
 
 def xp_bar(current: int, maximum: int, length: int = 14) -> str:
     if maximum <= 0:
         return '░' * length
     filled = max(0, min(length, int((current / maximum) * length)))
-    return C.CYAN + '█' * filled + C.LGRAY + '░' * (length - filled) + C.RESET
+    return C.LGREEN + '█' * filled + C.LGRAY + '░' * (length - filled) + C.RESET
 
 def stamina_pips(current: int, maximum: int) -> str:
     return C.YELLOW + '●' * current + C.LGRAY + '○' * (maximum - current) + C.RESET
@@ -450,7 +454,7 @@ class Mage(Character):
         pot = f'{C.GREEN}[P:{self.potions}]{C.RESET}'
         box_row(f'  {C.MAGENTA}{C.BRIGHT}{self.CLASS_NAME}: {self.name}{C.RESET}  Nv.{self.level}  '
                 f'HP {hp_bar(self.hp, self.max_hp)} {self.hp}/{self.max_hp}  {pot}')
-        box_row(f'  MP {hp_bar(self.mana, self.max_mana)} {self.mana}/{self.max_mana}'
+        box_row(f'  MP {mp_bar(self.mana, self.max_mana)} {self.mana}/{self.max_mana}'
                 f'   XP {xp_bar(self.xp, self.xp_to_next)}')
 
     def draw_full(self):
@@ -458,7 +462,7 @@ class Mage(Character):
         stats = [
             f' {C.MAGENTA}{C.BRIGHT}{self.CLASS_NAME}: {self.name}{C.RESET}  Nv.{self.level}',
             f' HP  {hp_bar(self.hp, self.max_hp, 16)} {self.hp}/{self.max_hp}',
-            f' MP  {hp_bar(self.mana, self.max_mana, 16)} {self.mana}/{self.max_mana}',
+            f' MP  {mp_bar(self.mana, self.max_mana, 16)} {self.mana}/{self.max_mana}',
             f' XP  {xp_bar(self.xp, self.xp_to_next)} {self.xp}/{self.xp_to_next}',
             f' MGK {self.magic_power}   DEF {self.defense}',
             f' {C.GREEN}Pociones: {self.potions}{C.RESET}   Oro: {self.gold}',
@@ -764,9 +768,8 @@ def _render_dodge_frame(sx: int, sy: int, projs: list,
 
     # HP
     pct    = player_hp / max(player_max_hp, 1)
-    h_col  = _GREEN if pct > 0.5 else (_YELLOW if pct > 0.25 else _RED)
     h_fill = int(pct * 20)
-    hp_bar_str = h_col + '█' * h_fill + '\x1b[90m' + '░' * (20 - h_fill) + _RST
+    hp_bar_str = _RED + '█' * h_fill + '\x1b[90m' + '░' * (20 - h_fill) + _RST
     _goto(3, _DC + 8)
     sys.stdout.write(hp_bar_str + f' {player_hp}/{player_max_hp}   ')
 
