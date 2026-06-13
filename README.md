@@ -1,86 +1,86 @@
 # Terminal RPG
 
-Un juego de rol por turnos que corre completamente en la terminal, con combate en tiempo real al estilo **Undertale**, pixel art con bloques Unicode y una historia épica de 3 actos.
+A turn-based RPG that runs entirely in the terminal, featuring **Undertale-style real-time dodge combat**, Unicode pixel art sprites, and an epic 3-act story.
 
-## Requisitos
+## Requirements
 
 - Python 3.8+
-- Windows 10/11 (el sistema de esquiva en tiempo real usa `msvcrt`)
+- Windows 10/11 (the real-time dodge system uses `msvcrt`)
 
 ```bash
 pip install colorama
 ```
 
-## Cómo jugar
+## How to play
 
 ```bash
 python game.py
 ```
 
-## Combate
+## Combat
 
-Cada turno tienes 4 opciones:
+Each turn you have 4 options:
 
-| Opción | Descripción |
+| Option | Description |
 |--------|-------------|
-| `LUCHAR` | Ataca al enemigo (físico, habilidades o hechizos) |
-| `ACTUAR` | Interactúa con el enemigo para reducir su hostilidad |
-| `OBJETO` | Usa una poción de salud |
-| `PERDONAR` | Perdona al enemigo cuando está lo suficientemente calmado |
+| `FIGHT` | Attack the enemy (physical, skills, or spells) |
+| `ACT` | Interact with the enemy to reduce their hostility |
+| `ITEM` | Use a health potion |
+| `SPARE` | Spare the enemy once they are calm enough |
 
-Después de cada acción del jugador, el enemigo contraataca con un **mini-juego de esquiva en tiempo real**: mueve tu alma `♥` con `W A S D` o las flechas del teclado para esquivar los proyectiles. Si los esquivas todos, recibes **0 daño**.
+After every player action, the enemy counterattacks with a **real-time dodge mini-game**: move your soul `♥` using `W A S D` or the arrow keys to dodge incoming projectiles. Dodge everything and you take **0 damage**.
 
-## Clases
+## Classes
 
-**Guerrero**
-- HP alto, defensa alta
-- Golpe Devastador (x2.2 daño, consume Stamina)
-- Grito de Guerra (aumenta ATK permanentemente en el combate)
+**Warrior**
+- High HP and defense
+- Power Strike (2.2× damage, costs Stamina)
+- War Cry (permanently boosts ATK for the current fight)
 
-**Mago**
-- Cuatro hechizos: Bola de Fuego, Rayo de Hielo, Curación Arcana, Tormenta Arcana
-- Menor defensa pero mayor daño mágico
+**Mage**
+- Four spells: Fireball, Ice Ray, Arcane Heal, Arcane Storm
+- Lower defense but devastating magic damage
 
-## Contenido
+## Content
 
-- 3 actos con 4 combates cada uno + escena narrativa a mitad de acto
-- 9 tipos de enemigos, cada uno con patrón de ataque único
-- Jefe final: **Malachar, Señor del Abismo**
-- Sistema ACT: cada enemigo tiene 2 acciones propias que permiten perdonarlo
-- Prólogo, historia entre actos y final completo con texto al ritmo del jugador (ENTER por párrafo)
+- 3 acts with 4 battles each + a mid-act cutscene
+- 9 enemy types, each with a unique attack pattern
+- Final boss: **Malachar, Lord of the Abyss**
+- ACT system: every enemy has 2 unique interactions that can lead to sparing them
+- Full story with prologue, inter-act scenes and ending — text advances paragraph by paragraph at your own pace
 
-## Enemigos y patrones de ataque
+## Enemies & attack patterns
 
-| Enemigo | Patrón |
-|---------|--------|
-| Slime | Bolas lentas cayendo desde arriba |
-| Goblin | Flechas rápidas de derecha a izquierda |
-| Lobo | Ataques diagonales desde la esquina |
-| Esqueleto | Huesos desde ambos lados simultáneamente |
-| Orco | Pared ancha y lenta |
-| Mago Oscuro | Orbes curvos, dobles en fase tardía |
-| Troll | Rocas irregulares, se vuelve más rápido |
-| Vampiro | Murciélagos desde cualquier lado |
-| Demonio | Proyectiles rápidos desde los 4 bordes |
-| **Malachar** | Pared de fuego con un único hueco — encuéntralo |
+| Enemy | Pattern |
+|-------|---------|
+| Slime | Slow blobs falling from above |
+| Goblin | Fast arrows from right to left |
+| Wolf | Diagonal strikes from the corner |
+| Skeleton | Bones from both sides simultaneously |
+| Orc | Wide, slow wall projectile |
+| Dark Mage | Curving orbs, doubles in later phase |
+| Troll | Irregular rocks, accelerates over time |
+| Vampire | Bats from any side |
+| Demon | Fast projectiles from all 4 edges |
+| **Malachar** | Wall of fire with a single gap — find it |
 
-## Capturas
+## Screenshot
 
 ```
 ╔══════════════════════════════════════════════════════════════════════╗
-║                      COMBATE  -  Ronda 3                            ║
+║                      COMBAT  -  Round 3                             ║
 ║                                                                      ║
 ║      ██████          Goblin                                          ║
 ║      ██  ██          HP  ████████░░░░░░░░░░ 28/50                   ║
 ║      ████            ATK 10   DEF 2                                  ║
 ╠══════════════════════════════════════════════════════════════════════╣
-║  GOLPE DEVASTADOR! 44 dano.                                          ║
+║  POWER STRIKE! 44 damage.                                            ║
 ╠══════════════════════════════════════════════════════════════════════╣
-║  Guerrero: Aldric  Nv.2  HP ██████████████░░░░░░ 98/140  [P:2]      ║
+║  Warrior: Aldric  Lv.2  HP ██████████████░░░░░░ 98/140  [P:2]       ║
 ╚══════════════════════════════════════════════════════════════════════╝
 
-*** ATAQUE DE GOBLIN ***
-Tiempo: ████████████░░░░░░░░░░░░░░░░░░
+*** GOBLIN IS ATTACKING ***
+Time:   ████████████░░░░░░░░░░░░░░░░░░
 HP:     ██████████████████░░ 98/140
 
 ┌──────────────────────────────┐
@@ -93,5 +93,5 @@ HP:     ██████████████████░░ 98/140
 │          >                   │
 │                              │
 └──────────────────────────────┘
-Mueve: W A S D  o  flechas del teclado
+Move: W A S D  or  arrow keys
 ```
