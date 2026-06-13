@@ -1,4 +1,4 @@
-<img width="508" height="234" alt="image" src="https://github.com/user-attachments/assets/11c0c496-d015-4a31-9879-dd30dc83e290" /># Terminal RPG
+# Terminal RPG
 
 A turn-based RPG that runs entirely in the terminal, featuring **Undertale-style real-time dodge combat**, Unicode pixel art sprites, and an epic 3-act story.
 
@@ -64,3 +64,4 @@ After every player action, the enemy counterattacks with a **real-time dodge min
 | Demon | Fast projectiles from all 4 edges |
 | **Malachar** | Wall of fire with a single gap — find it |
 
+<img width="508" height="234" alt="image" src="https://github.com/user-attachments/assets/11c0c496-d015-4a31-9879-dd30dc83e290" />
