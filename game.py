@@ -375,7 +375,7 @@ class Warrior(Character):
         if self.stamina <= 0:
             return None, 'Sin Stamina.'
         self.stamina -= 1
-        raw    = int(self.attack * 1.4 * random.uniform(0.85, 1.10))
+        raw    = int(self.attack * 0.8 * random.uniform(0.80, 1.05))
         dmg    = target.take_damage(raw)
         return dmg, f'GOLPE DEVASTADOR! {dmg} dano.'
 
@@ -383,7 +383,7 @@ class Warrior(Character):
         if self.stamina < 2:
             return None, 'Necesitas 2 Stamina.'
         self.stamina -= 2
-        bonus = int(self.attack * 0.2)
+        bonus = int(self.attack * 0.08)
         self.attack += bonus
         return bonus, f'GRITO DE GUERRA! ATK +{bonus}.'
 
@@ -413,10 +413,10 @@ class Mage(Character):
     COLOR      = C.MAGENTA
 
     SPELLS = {
-        1: {"name": "Bola de Fuego",   "cost": 15, "mult": 1.2, "type": "damage", "desc": "Alto dano de fuego"},
-        2: {"name": "Rayo de Hielo",   "cost": 10, "mult": 0.85,"type": "damage", "desc": "Bajo costo, dano moderado"},
-        3: {"name": "Curacion Arcana", "cost": 20, "mult": 1.4, "type": "heal",   "desc": "Restaura HP propio"},
-        4: {"name": "Tormenta Arcana", "cost": 30, "mult": 1.6, "type": "damage", "desc": "El hechizo mas potente"},
+        1: {"name": "Bola de Fuego",   "cost": 15, "mult": 0.65, "type": "damage", "desc": "Dano de fuego moderado"},
+        2: {"name": "Rayo de Hielo",   "cost": 10, "mult": 0.40, "type": "damage", "desc": "Bajo costo, dano bajo"},
+        3: {"name": "Curacion Arcana", "cost": 20, "mult": 1.1,  "type": "heal",   "desc": "Restaura HP propio"},
+        4: {"name": "Tormenta Arcana", "cost": 30, "mult": 0.90, "type": "damage", "desc": "El hechizo mas potente"},
     }
 
     def __init__(self, name):
@@ -507,15 +507,15 @@ class Enemy:
 
 
 _TEMPLATES = {
-    "slime":     ("Slime",         40,  7,  1,  45,  4, "slime",     C.CYAN),
-    "goblin":    ("Goblin",        50, 10,  2,  60,  6, "goblin",    C.GREEN),
-    "wolf":      ("Lobo Feroz",    60, 16,  3,  70,  8, "wolf",      C.YELLOW),
-    "skeleton":  ("Esqueleto",     70, 14,  6,  80,  9, "skeleton",  C.WHITE),
-    "orc":       ("Orco Guerrero", 105, 23, 10, 110, 16, "orc",      C.LGREEN),
-    "dark_mage": ("Mago Oscuro",   80, 25,  5, 130, 20, "dark_mage", C.MAGENTA),
-    "troll":     ("Troll de Roca", 125, 21, 13, 150, 24, "troll",    C.LGRAY),
-    "vampire":   ("Vampiro",       90, 22,  7, 140, 22, "vampire",   C.LMAGENTA),
-    "demon":     ("Demonio Mayor", 110, 28,  8, 160, 28, "demon",    C.RED),
+    "slime":     ("Slime",         40,  22,  1,  45,  4, "slime",     C.CYAN),
+    "goblin":    ("Goblin",        50,  34,  2,  60,  6, "goblin",    C.GREEN),
+    "wolf":      ("Lobo Feroz",    60,  50,  3,  70,  8, "wolf",      C.YELLOW),
+    "skeleton":  ("Esqueleto",     70,  46,  6,  80,  9, "skeleton",  C.WHITE),
+    "orc":       ("Orco Guerrero", 105, 70, 10, 110, 16, "orc",       C.LGREEN),
+    "dark_mage": ("Mago Oscuro",   80,  78,  5, 130, 20, "dark_mage", C.MAGENTA),
+    "troll":     ("Troll de Roca", 125, 65, 13, 150, 24, "troll",     C.LGRAY),
+    "vampire":   ("Vampiro",       90,  68,  7, 140, 22, "vampire",   C.LMAGENTA),
+    "demon":     ("Demonio Mayor", 110, 86,  8, 160, 28, "demon",     C.RED),
 }
 
 def get_act_enemy(act: int) -> Enemy:
@@ -756,7 +756,7 @@ def _spawn_interval(sprite_key: str) -> float:
 
 
 def _dodge_duration(sprite_key: str) -> float:
-    return 7.0 if sprite_key == "dragon" else 5.0
+    return 14.0 if sprite_key == "dragon" else 9.0
 
 
 def _draw_dodge_static(enemy_name: str):
@@ -842,7 +842,7 @@ def run_dodge_phase(enemy: Enemy, player) -> int:
 
     duration = _dodge_duration(enemy.sprite_key)
     interval = _spawn_interval(enemy.sprite_key)
-    hit_dmg  = max(2, enemy.attack // 6)
+    hit_dmg  = max(8, enemy.attack // 3)
 
     _hide_cursor()
     _draw_dodge_static(enemy.name)
