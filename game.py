@@ -511,11 +511,11 @@ _TEMPLATES = {
     "goblin":    ("Goblin",        50,  34,  2,  60,  6, "goblin",    C.GREEN),
     "wolf":      ("Lobo Feroz",    60,  50,  3,  70,  8, "wolf",      C.YELLOW),
     "skeleton":  ("Esqueleto",     70,  46,  6,  80,  9, "skeleton",  C.WHITE),
-    "orc":       ("Orco Guerrero", 105, 70, 10, 110, 16, "orc",       C.LGREEN),
-    "dark_mage": ("Mago Oscuro",   80,  78,  5, 130, 20, "dark_mage", C.MAGENTA),
-    "troll":     ("Troll de Roca", 125, 65, 13, 150, 24, "troll",     C.LGRAY),
-    "vampire":   ("Vampiro",       90,  68,  7, 140, 22, "vampire",   C.LMAGENTA),
-    "demon":     ("Demonio Mayor", 110, 86,  8, 160, 28, "demon",     C.RED),
+    "orc":       ("Orco Guerrero", 105, 58, 10, 110, 16, "orc",       C.LGREEN),
+    "dark_mage": ("Mago Oscuro",   80,  64,  5, 130, 20, "dark_mage", C.MAGENTA),
+    "troll":     ("Troll de Roca", 125, 54, 13, 150, 24, "troll",     C.LGRAY),
+    "vampire":   ("Vampiro",       90,  56,  7, 140, 22, "vampire",   C.LMAGENTA),
+    "demon":     ("Demonio Mayor", 110, 72,  8, 160, 28, "demon",     C.RED),
 }
 
 def get_act_enemy(act: int) -> Enemy:
