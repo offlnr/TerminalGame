@@ -333,7 +333,7 @@ class Character:
         return True, f'Usas una Pocion. +{amt} HP.'
 
     def physical_attack(self, target) -> int:
-        raw = int(self.attack * random.uniform(0.80, 1.20))
+        raw = int(self.attack * random.uniform(0.50, 0.80))
         return target.take_damage(raw)
 
     def gain_xp(self, amount: int) -> bool:
@@ -375,7 +375,7 @@ class Warrior(Character):
         if self.stamina <= 0:
             return None, 'Sin Stamina.'
         self.stamina -= 1
-        raw    = int(self.attack * 2.2 * random.uniform(0.90, 1.30))
+        raw    = int(self.attack * 1.4 * random.uniform(0.85, 1.10))
         dmg    = target.take_damage(raw)
         return dmg, f'GOLPE DEVASTADOR! {dmg} dano.'
 
@@ -383,7 +383,7 @@ class Warrior(Character):
         if self.stamina < 2:
             return None, 'Necesitas 2 Stamina.'
         self.stamina -= 2
-        bonus = int(self.attack * 0.5)
+        bonus = int(self.attack * 0.2)
         self.attack += bonus
         return bonus, f'GRITO DE GUERRA! ATK +{bonus}.'
 
@@ -413,10 +413,10 @@ class Mage(Character):
     COLOR      = C.MAGENTA
 
     SPELLS = {
-        1: {"name": "Bola de Fuego",   "cost": 15, "mult": 2.0, "type": "damage", "desc": "Alto dano de fuego"},
-        2: {"name": "Rayo de Hielo",   "cost": 10, "mult": 1.4, "type": "damage", "desc": "Bajo costo, buen dano"},
-        3: {"name": "Curacion Arcana", "cost": 20, "mult": 1.6, "type": "heal",   "desc": "Restaura HP propio"},
-        4: {"name": "Tormenta Arcana", "cost": 30, "mult": 2.8, "type": "damage", "desc": "El hechizo mas potente"},
+        1: {"name": "Bola de Fuego",   "cost": 15, "mult": 1.2, "type": "damage", "desc": "Alto dano de fuego"},
+        2: {"name": "Rayo de Hielo",   "cost": 10, "mult": 0.85,"type": "damage", "desc": "Bajo costo, dano moderado"},
+        3: {"name": "Curacion Arcana", "cost": 20, "mult": 1.4, "type": "heal",   "desc": "Restaura HP propio"},
+        4: {"name": "Tormenta Arcana", "cost": 30, "mult": 1.6, "type": "damage", "desc": "El hechizo mas potente"},
     }
 
     def __init__(self, name):
@@ -592,15 +592,32 @@ _RST    = '\x1b[0m'
 
 class Projectile:
     """Un proyectil en la caja de esquiva."""
-    def __init__(self, x: float, y: float, vx: float, vy: float, char: str = '*'):
-        self.x    = x
-        self.y    = y
-        self.vx   = vx   # cols por segundo
-        self.vy   = vy   # filas por segundo
-        self.char = char
-        self.alive = True
+    def __init__(self, x: float, y: float, vx: float, vy: float,
+                 char: str = '*', homing: float = 0.0):
+        self.x      = x
+        self.y      = y
+        self.vx     = vx
+        self.vy     = vy
+        self.char   = char
+        self.alive  = True
+        self.homing = homing  # 0=recto, 1=leve, 3=fuerte, 5=muy fuerte
+        self._spd   = max(0.1, (vx * vx + vy * vy) ** 0.5)  # velocidad inicial
 
-    def update(self, dt: float):
+    def update(self, dt: float, sx: float = None, sy: float = None):
+        if self.homing > 0 and sx is not None:
+            dx   = sx - self.x
+            dy   = sy - self.y
+            dist = max(0.1, (dx * dx + dy * dy) ** 0.5)
+            # Interpola la direccion actual hacia el alma
+            t     = min(1.0, self.homing * dt)
+            tvx   = (dx / dist) * self._spd
+            tvy   = (dy / dist) * self._spd
+            self.vx = self.vx * (1 - t) + tvx * t
+            self.vy = self.vy * (1 - t) + tvy * t
+            # Mantiene la velocidad original
+            spd = max(0.1, (self.vx * self.vx + self.vy * self.vy) ** 0.5)
+            self.vx = self.vx / spd * self._spd
+            self.vy = self.vy / spd * self._spd
         self.x += self.vx * dt
         self.y += self.vy * dt
         if not (0 <= self.x < _DW and 0 <= self.y < _DH):
@@ -638,98 +655,108 @@ def _get_key():
 
 
 def _spawn_projectiles(sprite_key: str, elapsed: float, duration: float) -> list:
-    """Devuelve nuevos proyectiles para este frame según el tipo de enemigo."""
+    """Devuelve nuevos proyectiles. Cada enemigo tiene homing distinto."""
     phase = elapsed / max(duration, 0.01)
     projs = []
 
     if sprite_key == "slime":
-        x = random.randint(1, _DW - 2)
-        projs.append(Projectile(x, 0, 0, 2.5 + phase, 'o'))
+        # Bolas sin homing, pero spawnea dos en fase tardia
+        for _ in range(2 if phase > 0.5 else 1):
+            x = random.randint(1, _DW - 2)
+            projs.append(Projectile(x, 0, 0, 2.8 + phase * 0.8, 'o', homing=0.0))
 
     elif sprite_key == "goblin":
-        y = random.randint(0, _DH - 1)
-        projs.append(Projectile(_DW - 1, y, -(10 + phase * 4), 0, '>'))
+        # Flechas con homing leve — se curvan hacia el alma
+        for _ in range(2 if phase > 0.6 else 1):
+            y = random.randint(0, _DH - 1)
+            projs.append(Projectile(_DW - 1, y, -(11 + phase * 3), 0, '>', homing=1.5))
 
     elif sprite_key == "wolf":
-        projs.append(Projectile(_DW - 1, 0, -(7 + phase * 2),
-                                3 + random.uniform(-0.5, 0.5), '*'))
+        # Ataque diagonal + homing moderado
+        projs.append(Projectile(_DW - 1, 0, -(8 + phase * 2),
+                                3.5 + random.uniform(-0.5, 0.5), '*', homing=1.0))
+        if phase > 0.5:
+            projs.append(Projectile(0, 0, 8 + phase * 2,
+                                    3.5 + random.uniform(-0.5, 0.5), '*', homing=1.0))
 
     elif sprite_key == "skeleton":
+        # Huesos desde ambos lados con homing bajo
         y = random.randint(0, _DH - 1)
-        if random.random() < 0.5:
-            projs.append(Projectile(0, y, 9.0, 0, '-'))
-        else:
-            projs.append(Projectile(_DW - 1, y, -9.0, 0, '-'))
+        projs.append(Projectile(0,      y,  10.0, 0, '-', homing=0.8))
+        projs.append(Projectile(_DW-1,  y, -10.0, 0, '-', homing=0.8))
 
     elif sprite_key == "orc":
+        # Pared ancha — sin homing pero muy gruesa
         y = random.randint(1, _DH - 2)
         for dy in (-1, 0, 1):
             ny = y + dy
             if 0 <= ny < _DH:
-                projs.append(Projectile(_DW - 1, ny, -4.5, 0, '#'))
+                projs.append(Projectile(_DW - 1, ny, -(5.0 + phase), 0, '#', homing=0.0))
 
     elif sprite_key == "dark_mage":
-        y = random.randint(1, _DH - 2)
-        vy = random.uniform(-2.5, 2.5)
-        projs.append(Projectile(_DW - 1, y, -8.0, vy, '@'))
-        if phase > 0.4:
-            projs.append(Projectile(_DW - 1, _DH - 1 - y, -7.5, -vy, '@'))
+        # Orbes con homing moderado, siempre dobles en fase tardia
+        y  = random.randint(1, _DH - 2)
+        vy = random.uniform(-2.0, 2.0)
+        projs.append(Projectile(_DW - 1, y,       -9.0, vy,  '@', homing=2.0))
+        projs.append(Projectile(_DW - 1, _DH-1-y, -8.5, -vy, '@', homing=2.0))
+        if phase > 0.5:
+            projs.append(Projectile(0, random.randint(0, _DH-1),  9.0, 0, '@', homing=2.0))
 
     elif sprite_key == "troll":
-        x = random.randint(1, _DW - 2)
-        projs.append(Projectile(x, 0, random.uniform(-1, 1), 2.0, 'O'))
-        if phase > 0.5:
-            projs.append(Projectile(random.randint(1, _DW - 2), 0,
-                                    random.uniform(-1, 1), 2.3, 'O'))
+        # Rocas con homing leve, mas en fase tardia
+        for _ in range(3 if phase > 0.6 else 2 if phase > 0.3 else 1):
+            x = random.randint(1, _DW - 2)
+            projs.append(Projectile(x, 0, random.uniform(-0.8, 0.8),
+                                    2.2 + phase * 0.5, 'O', homing=0.5))
 
     elif sprite_key == "vampire":
-        side = random.choice(['L', 'R'])
-        x0   = 0 if side == 'L' else _DW - 1
-        vx0  = 8.0 if side == 'L' else -8.0
-        y    = random.randint(0, _DH - 1)
-        projs.append(Projectile(x0, y, vx0, random.uniform(-1.5, 1.5), 'v'))
+        # Murcielagos con homing fuerte — te buscan activamente
+        for _ in range(2 if phase > 0.4 else 1):
+            side = random.choice(['L', 'R', 'T', 'B'])
+            if side == 'L':  p = Projectile(0,      random.randint(0,_DH-1),  9.0,  0, 'v', homing=3.5)
+            elif side == 'R': p = Projectile(_DW-1,  random.randint(0,_DH-1), -9.0,  0, 'v', homing=3.5)
+            elif side == 'T': p = Projectile(random.randint(0,_DW-1), 0,        0,   8.0,'v', homing=3.5)
+            else:             p = Projectile(random.randint(0,_DW-1),_DH-1,    0,  -8.0,'v', homing=3.5)
+            projs.append(p)
 
     elif sprite_key == "demon":
-        side = random.randint(0, 3)
-        sp   = 10.0 + phase * 3
-        if side == 0:   projs.append(Projectile(random.randint(0,_DW-1), 0, 0, sp, 'V'))
-        elif side == 1: projs.append(Projectile(random.randint(0,_DW-1),_DH-1, 0,-sp, '^'))
-        elif side == 2: projs.append(Projectile(0, random.randint(0,_DH-1), sp, 0, '>'))
-        else:           projs.append(Projectile(_DW-1,random.randint(0,_DH-1),-sp, 0, '<'))
-        if phase > 0.5:
-            s2 = (side + 2) % 4
-            if s2 == 0:   projs.append(Projectile(random.randint(0,_DW-1), 0, 0, sp, 'V'))
-            elif s2 == 1: projs.append(Projectile(random.randint(0,_DW-1),_DH-1, 0,-sp, '^'))
-            elif s2 == 2: projs.append(Projectile(0, random.randint(0,_DH-1), sp, 0, '>'))
-            else:         projs.append(Projectile(_DW-1,random.randint(0,_DH-1),-sp, 0, '<'))
+        # Proyectiles desde los 4 bordes con homing moderado
+        sp = 11.0 + phase * 3
+        for side in random.sample(range(4), 2 if phase < 0.5 else 4):
+            if side == 0:   projs.append(Projectile(random.randint(0,_DW-1), 0,    0,  sp, 'V', homing=2.5))
+            elif side == 1: projs.append(Projectile(random.randint(0,_DW-1),_DH-1, 0, -sp, '^', homing=2.5))
+            elif side == 2: projs.append(Projectile(0, random.randint(0,_DH-1),   sp,  0, '>', homing=2.5))
+            else:           projs.append(Projectile(_DW-1,random.randint(0,_DH-1),-sp, 0, '<', homing=2.5))
 
     elif sprite_key == "dragon":
-        # Malachar: pared de fuego con hueco
+        # Malachar: pared de fuego con hueco que se desplaza hacia el alma
+        # (los bloques tienen homing leve, haciendo el hueco dinamico)
         gap = random.randint(3, _DW - 4)
+        spd = 5.5 + phase * 2.5
         for x in range(_DW):
             if abs(x - gap) > 1:
-                projs.append(Projectile(x, 0, 0, 5.0 + phase * 2, '█'))
+                projs.append(Projectile(x, 0, 0, spd, '█', homing=0.8))
 
     return projs
 
 
 def _spawn_interval(sprite_key: str) -> float:
     return {
-        "slime":     0.55,
-        "goblin":    0.35,
-        "wolf":      0.40,
-        "skeleton":  0.45,
-        "orc":       0.65,
-        "dark_mage": 0.30,
-        "troll":     0.50,
-        "vampire":   0.38,
-        "demon":     0.25,
-        "dragon":    0.80,
-    }.get(sprite_key, 0.40)
+        "slime":     0.42,
+        "goblin":    0.26,
+        "wolf":      0.30,
+        "skeleton":  0.34,
+        "orc":       0.52,
+        "dark_mage": 0.22,
+        "troll":     0.38,
+        "vampire":   0.26,
+        "demon":     0.18,
+        "dragon":    0.65,
+    }.get(sprite_key, 0.32)
 
 
 def _dodge_duration(sprite_key: str) -> float:
-    return 4.5 if sprite_key == "dragon" else 3.5
+    return 7.0 if sprite_key == "dragon" else 5.0
 
 
 def _draw_dodge_static(enemy_name: str):
@@ -846,9 +873,9 @@ def run_dodge_phase(enemy: Enemy, player) -> int:
                 last_spawn = now
                 projs.extend(_spawn_projectiles(enemy.sprite_key, elapsed, duration))
 
-            # Update
+            # Update — pasa posicion del alma para homing
             for p in projs:
-                p.update(dt)
+                p.update(dt, float(sx), float(sy))
             projs = [p for p in projs if p.alive]
 
             # Collision (con iframes)
